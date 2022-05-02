@@ -1,0 +1,8 @@
+apitoken = "<your api token>"
+
+chats = [-1234]
+
+[youtube]
+channels = ["abc", "def"]
+cooldown = 6000000000
+ytsecret = "client_secret.json"

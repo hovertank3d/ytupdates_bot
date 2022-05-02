@@ -6,10 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
-	"os/user"
-	"path/filepath"
 	"time"
 
 	"golang.org/x/net/context"
@@ -38,11 +35,8 @@ Please configure OAuth 2.0
 
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
-func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
-	if err != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", err)
-	}
+func getClient(dir string, ctx context.Context, config *oauth2.Config) *http.Client {
+	cacheFile := dir + "credentials.json"
 	tok, err := tokenFromFile(cacheFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
@@ -68,19 +62,6 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to retrieve token from web %v", err)
 	}
 	return tok
-}
-
-// tokenCacheFile generates credential file path/filename.
-// It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
-	usr, err := user.Current()
-	if err != nil {
-		return "", err
-	}
-	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
-	os.MkdirAll(tokenCacheDir, 0700)
-	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("youtube-go-quickstart.json")), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
@@ -117,17 +98,6 @@ func handleError(err error, message string) {
 	}
 }
 
-func getChannelId___(service *youtube.Service, part string, forUsername string) string {
-	var part_arr = []string{part}
-
-	call := service.Channels.List(part_arr)
-	call = call.ForUsername(forUsername)
-	response, err := call.Do()
-	handleError(err, "")
-
-	return response.Items[0].Id
-}
-
 func getChannelId(service *youtube.Service, name string) string {
 
 	var part = []string{"snippet"}
@@ -157,7 +127,7 @@ func getLastVideo(service *youtube.Service, channelId string) string {
 	return response.Items[0].Id.VideoId
 }
 
-func initApi(ytconfig youtubeConfig) *youtube.Service {
+func initApi(dir string, ytconfig youtubeConfig) *youtube.Service {
 
 	ctx := context.Background()
 
@@ -172,7 +142,7 @@ func initApi(ytconfig youtubeConfig) *youtube.Service {
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := getClient(ctx, config)
+	client := getClient(dir, ctx, config)
 	service, err := youtube.New(client)
 
 	handleError(err, "Error creating YouTube client")

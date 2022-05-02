@@ -9,6 +9,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/pborman/getopt/v2"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -57,7 +58,11 @@ func potom_pridumaiu_nazvanie_xddd(bot *tgbotapi.BotAPI, config botConfig) {
 
 func main() {
 
-	config := loadConfig("config.toml")
+	dir := getopt.StringLong("dir", 'd', "./", "working directory")
+
+	getopt.Parse()
+
+	config := loadConfig(*dir + "config.toml")
 
 	bot, err := tgbotapi.NewBotAPI(config.Apitoken)
 	if err != nil {
@@ -67,7 +72,7 @@ func main() {
 	bot.Debug = false
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	yt_service = initApi(config.Youtube)
+	yt_service = initApi(*dir, config.Youtube)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
